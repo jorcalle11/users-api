@@ -6,11 +6,17 @@ var nodemon = require('gulp-nodemon');
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
 
-var files = { api: './src/**/*.js' };
+var config = {
+  scripts : {
+    watch: './src/**/*.js',
+    input: './build/app.js',
+    output: './build'
+  }
+};
 
 gulp.task('nodemon', function () {
   nodemon({
-    script: './build/app.js',
+    script: config.scripts.input,
     watch: ['./src'],
     env: {
       port: 3000
@@ -20,15 +26,15 @@ gulp.task('nodemon', function () {
 });
 
 gulp.task('transpilate', function () {
-  gulp.src(files.api)
+  gulp.src(config.scripts.watch)
   .pipe(babel({
     presets: ['es2015']
   }))
-  .pipe(gulp.dest('./build'));
+  .pipe(gulp.dest(config.scripts.output));
 });
 
 gulp.task('jshint', function () {
-  gulp.src(files.api)
+  gulp.src(config.scripts.watch)
   .pipe(jshint('.jshintrc'))
   .pipe(jshint.reporter(stylish));
 });
