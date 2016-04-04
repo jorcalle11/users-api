@@ -9,7 +9,6 @@
   "undef": true,
   "unused": true,
   "quotmark": "single",
-  "camelcase": true,
   "bitwise": true,
   "eqeqeq": true
 }

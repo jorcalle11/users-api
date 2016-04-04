@@ -1,5 +1,7 @@
 'use strict';
 import _ from 'lodash';
+import cloudinary from 'cloudinary';
+import async from 'async';
 import User from '../models';
 
 class UserCtrl {
@@ -24,16 +26,41 @@ class UserCtrl {
   }
 
   add (req, res) {
-    let user = new User(req.body);
-
-    user.save((err,userSaved) => {
-      if (err) return res.status(409).send({
+    async.waterfall([
+      function body (callback) {
+        if (!req.body.email && !req.body.name) callback('body');
+        callback(null,true);
+      },
+      function loadImage (status, callback) {
+        let user = new User(req.body);
+        if (req.file) {
+          cloudinary.uploader.upload(req.file.path, (result) => {
+            user.image.url = result.url;
+            user.image.publicId = result.public_id;
+            callback(null,user);
+          },{ width: 200, height: 200, crop: 'fill' });
+        } else {
+          callback(null,user);
+        }
+      },
+      function saveUser (user, callback) {
+        user.save((err,userSaved) => {
+          if (err) callback('save');
+          callback(null, userSaved);
+        });
+      }
+    ], function (err, result) {
+      if (err === 'body') return res.status(404).send({
+        status: 404,
+        message: 'Required',
+        error: `Debe escribir al menos email y nombre`
+      });
+      if (err === 'save') return res.status(409).send({
         status: 409,
         message: 'Conflict',
         error: `el email ${req.body.email} pertenece a otro usuario`
       });
-
-      res.status(201).send(userSaved);
+      res.status(201).send(result);
     });
   }
 
