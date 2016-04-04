@@ -19,7 +19,7 @@ gulp.task('nodemon', function () {
     script: config.scripts.input,
     watch: ['./src'],
     env: {
-      port: 3000
+      PORT: 3000
     },
     tasks: ['jshint','transpilate']
   });
